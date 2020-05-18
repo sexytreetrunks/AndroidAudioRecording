@@ -4,17 +4,19 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
+import java.io.File
 
 class AudioRecordService : Service() {
 
     private val binder = MyBinder()
 
-    private var audioRecording: AudioRecorder? = null
+    private lateinit var audioRecording: AudioRecorder
 
     override fun onCreate() {
         super.onCreate()
 
-        audioRecording = AudioRecorder("")
+        audioRecording = AudioRecorder(getSavePath())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -22,12 +24,12 @@ class AudioRecordService : Service() {
         when(intent?.action) {
             AudioActions.ACTION_START_RECORD -> {
                 //build notification & startForeground
-                TODO("build notification & startForeground")
-
-                audioRecording?.startRecording()
+                Log.d(javaClass.simpleName, "action start")
+                audioRecording.startRecording()
             }
             AudioActions.ACTION_STOP_RECORD ->{
-                audioRecording?.stopRecording()
+                Log.d(javaClass.simpleName, "action stop")
+                audioRecording.stopRecording()
                 stopSelf()
             }
         }
@@ -41,10 +43,22 @@ class AudioRecordService : Service() {
     override fun onDestroy() {
         super.onDestroy()
 
-        audioRecording = null
+        if (isRecording())
+            audioRecording.stopRecording()
+
+        audioRecording.release()
+    }
+
+    public fun isRecording() : Boolean {
+        return audioRecording.isRecording()
     }
 
     inner class MyBinder : Binder() {
         fun getService() = this@AudioRecordService
+    }
+
+    private fun getSavePath(): String {
+        var externalDir = File(getExternalFilesDir(null), "record_")
+        return externalDir.absolutePath
     }
 }

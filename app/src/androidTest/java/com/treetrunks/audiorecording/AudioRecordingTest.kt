@@ -1,6 +1,7 @@
 package com.treetrunks.audiorecording
 
 import android.content.Context
+import android.os.Environment
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -17,38 +18,26 @@ class AudioRecordingTest {
 
     lateinit var audioRecoder: AudioRecorder
 
-    //@Before
+    @Before
     fun init() {
-        Log.d("********", "INIT!")
         val dir_file = File(getContext().getExternalFilesDir(null), "child")
         if (!dir_file.exists()) dir_file.mkdir()
         audioRecoder = AudioRecorder(dir_file.absolutePath)
-        audioRecoder.initRecorder()
     }
 
-    //@After
+    @After
     fun after() {
-        //tlqkf 왜 자꾸 init안됬다고 뜸??
-        Log.d("********", "AFTER!")
         audioRecoder.release()
     }
 
     @Test
-    fun testStartRecording() {
-        init()
-        Log.d("********", "TEST!")
+    fun testRecording() {
         Assert.assertEquals(false, audioRecoder.isRecording())
         audioRecoder.startRecording()
         Assert.assertEquals(true, audioRecoder.isRecording())
         audioRecoder.stopRecording()
         Assert.assertEquals(false, audioRecoder.isRecording())
-        after()
     }
-
-   /* @Test
-    fun testStopRecording() {
-        audioRecoder.stopRecording()
-    }*/
 
     private fun getContext(): Context {
         return InstrumentationRegistry.getInstrumentation().targetContext

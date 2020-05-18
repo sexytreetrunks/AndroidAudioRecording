@@ -1,6 +1,6 @@
 package com.treetrunks.audiorecording
 
-interface IAudioRecord {
+interface IAudioRecorder {
 
     public fun initRecorder()
 

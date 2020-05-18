@@ -7,9 +7,13 @@ import java.lang.IllegalStateException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AudioRecorder(val directoryPath: String) : IAudioRecord{
+class AudioRecorder(val directoryPath: String) : IAudioRecorder {
     private lateinit var mRecorder : MediaRecorder
     private var isRecording = false
+
+    init {
+        initRecorder()
+    }
 
     override fun initRecorder() {
         mRecorder = MediaRecorder().apply {
@@ -25,9 +29,11 @@ class AudioRecorder(val directoryPath: String) : IAudioRecord{
 
     override fun startRecording() {
         try {
-            mRecorder.setOutputFile(getSaveFilePath())
-            mRecorder.prepare()
-            mRecorder.start()
+            mRecorder.apply {
+                setOutputFile(getSaveFilePath())
+                prepare()
+                start()
+            }
             isRecording = true
         } catch (ioEx: IOException) {
             Log.e(javaClass.simpleName, "Prepare Failed..")
@@ -41,16 +47,22 @@ class AudioRecorder(val directoryPath: String) : IAudioRecord{
     }
 
     override fun stopRecording() {
-        mRecorder.stop()
-        isRecording = false
+        try {
+            mRecorder.stop()
+            isRecording = false
+        } catch (illegalEx: IllegalStateException) {
+            Log.e(javaClass.simpleName, "Maybe call stop before init or start")
+            illegalEx.printStackTrace()
+        }
     }
 
     override fun release() {
+        isRecording = false
         mRecorder.release()
     }
 
     private fun getSaveFilePath() : String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd_HH:mm")
+        val sdf = SimpleDateFormat("yyyy-MM-dd_HH:mm:ss")
         val timestamp = sdf.format(Date(System.currentTimeMillis()))
         return directoryPath + timestamp
     }
